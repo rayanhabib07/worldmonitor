@@ -464,6 +464,16 @@ export class GlobeMap {
   // Callbacks
   private onLayerChangeCb: ((layer: keyof MapLayers, enabled: boolean, source: 'user' | 'programmatic') => void) | null = null;
   private onMapContextMenuCb?: (payload: { lat: number; lon: number; screenX: number; screenY: number }) => void;
+  private readonly handleContextMenu = (e: MouseEvent): void => {
+    e.preventDefault();
+    if (!this.onMapContextMenuCb || !this.globe) return;
+    const rect = this.container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const coords = this.globe.toGlobeCoords(x, y);
+    if (!coords) return;
+    this.onMapContextMenuCb({ lat: coords.lat, lon: coords.lng, screenX: e.clientX, screenY: e.clientY });
+  };
 
   constructor(container: HTMLElement, initialState: MapContainerState) {
     this.container = container;
@@ -623,16 +633,7 @@ export class GlobeMap {
       });
     }
 
-    this.container.addEventListener('contextmenu', (e: MouseEvent) => {
-      e.preventDefault();
-      if (!this.onMapContextMenuCb || !this.globe) return;
-      const rect = this.container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const coords = this.globe.toGlobeCoords(x, y);
-      if (!coords) return;
-      this.onMapContextMenuCb({ lat: coords.lat, lon: coords.lng, screenX: e.clientX, screenY: e.clientY });
-    });
+    this.container.addEventListener('contextmenu', this.handleContextMenu);
 
     // Wire HTML marker layer
     globe
@@ -2782,6 +2783,7 @@ export class GlobeMap {
   // ─── Destroy ──────────────────────────────────────────────────────────────
 
   public destroy(): void {
+    this.container.removeEventListener('contextmenu', this.handleContextMenu);
     this.unsubscribeGlobeQuality?.();
     this.unsubscribeGlobeQuality = null;
     this.unsubscribeGlobeTexture?.();

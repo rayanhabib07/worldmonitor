@@ -251,7 +251,14 @@ export class CountryIntelManager implements AppModule {
           countryName: facts.countryName,
         });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (this.ctx.countryBriefPage?.getCode() !== code) return;
+        this.ctx.countryBriefPage.updateCountryFacts?.({
+          headOfState: '', headOfStateTitle: '', wikipediaSummary: '',
+          wikipediaThumbnailUrl: '', population: 0, capital: '',
+          languages: [], currencies: [], areaSqKm: 0, countryName: '',
+        });
+      });
 
     this.mountCountryTimeline(code, country);
 

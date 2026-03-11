@@ -358,6 +358,16 @@ export class DeckGLMap {
   private onTimeRangeChange?: (range: TimeRange) => void;
   private onCountryClick?: (country: CountryClickPayload) => void;
   private onMapContextMenu?: (payload: { lat: number; lon: number; screenX: number; screenY: number }) => void;
+  private readonly handleContextMenu = (e: MouseEvent): void => {
+    e.preventDefault();
+    if (!this.onMapContextMenu || !this.maplibreMap) return;
+    const rect = this.container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const lngLat = this.maplibreMap.unproject([x, y]);
+    if (!Number.isFinite(lngLat.lng)) return;
+    this.onMapContextMenu({ lat: lngLat.lat, lon: lngLat.lng, screenX: e.clientX, screenY: e.clientY });
+  };
   private onLayerChange?: (layer: keyof MapLayers, enabled: boolean, source: 'user' | 'programmatic') => void;
   private onStateChange?: (state: DeckMapState) => void;
   private onAircraftPositionsUpdate?: (positions: PositionSample[]) => void;
@@ -663,16 +673,7 @@ export class DeckGLMap {
       }
     });
 
-    this.container.addEventListener('contextmenu', (e: MouseEvent) => {
-      e.preventDefault();
-      if (!this.onMapContextMenu || !this.maplibreMap) return;
-      const rect = this.container.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const lngLat = this.maplibreMap.unproject([x, y]);
-      if (!Number.isFinite(lngLat.lng)) return;
-      this.onMapContextMenu({ lat: lngLat.lat, lon: lngLat.lng, screenX: e.clientX, screenY: e.clientY });
-    });
+    this.container.addEventListener('contextmenu', this.handleContextMenu);
   }
 
   private initDeck(): void {
@@ -5398,6 +5399,7 @@ export class DeckGLMap {
     this.maplibreMap?.remove();
     this.maplibreMap = null;
 
+    this.container.removeEventListener('contextmenu', this.handleContextMenu);
     this.container.innerHTML = '';
   }
 }
