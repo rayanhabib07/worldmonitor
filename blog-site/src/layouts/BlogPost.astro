@@ -8,9 +8,12 @@ interface Props {
   keywords?: string;
   pubDate: Date;
   audience?: string;
+  heroImage?: string;
+  slug?: string;
 }
 
-const { title, description, metaTitle, keywords, pubDate, audience } = Astro.props;
+const { title, description, metaTitle, keywords, pubDate, audience, heroImage, slug } = Astro.props;
+const ogImage = heroImage || (slug ? `https://www.worldmonitor.app/blog/og/${slug}.png` : undefined);
 const formattedDate = pubDate.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'short',
@@ -47,7 +50,7 @@ const jsonLd = {
     "@type": "WebPage",
     "@id": Astro.url.href
   },
-  "image": "https://www.worldmonitor.app/favico/og-image.png",
+  "image": ogImage || "https://www.worldmonitor.app/favico/og-image.png",
   "url": Astro.url.href,
   ...(keywords ? { "keywords": keywords } : {})
 };
@@ -59,6 +62,7 @@ const jsonLd = {
   metaTitle={metaTitle}
   keywords={keywords}
   ogType="article"
+  ogImage={ogImage}
   publishedTime={isoDate}
   modifiedTime={isoDate}
   jsonLd={jsonLd}

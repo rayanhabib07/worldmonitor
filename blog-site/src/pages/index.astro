@@ -26,7 +26,8 @@ const jsonLd = {
     "headline": post.data.title,
     "description": post.data.description,
     "datePublished": post.data.pubDate.toISOString(),
-    "url": `https://www.worldmonitor.app/blog/posts/${post.id}/`
+    "url": `https://www.worldmonitor.app/blog/posts/${post.id}/`,
+    "image": post.data.heroImage || `https://www.worldmonitor.app/blog/og/${post.id}.png`
   }))
 };
 ---
@@ -50,6 +51,14 @@ const jsonLd = {
     <div class="post-grid">
       {posts.map((post) => (
         <a href={`/blog/posts/${post.id}/`} class="post-card">
+          <img
+            src={post.data.heroImage || `/blog/og/${post.id}.png`}
+            alt={post.data.title}
+            class="post-card-img"
+            loading="lazy"
+            width="600"
+            height="315"
+          />
           <div class="tag">{post.data.audience}</div>
           <h2>{post.data.title}</h2>
           <p>{post.data.description}</p>
