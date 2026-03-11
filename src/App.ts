@@ -122,6 +122,35 @@ export class App {
       const panel = this.state.panels['gulf-economies'] as GulfEconomiesPanel | undefined;
       if (panel) primeTask('gulf-economies', () => panel.fetchData());
     }
+    if (this.isAnyPanelNearViewport(['markets', 'heatmap', 'commodities', 'crypto'])) {
+      primeTask('markets', () => this.dataLoader.loadMarkets());
+    }
+    if (this.isPanelNearViewport('polymarket')) {
+      primeTask('predictions', () => this.dataLoader.loadPredictions());
+    }
+    if (this.isPanelNearViewport('economic')) {
+      primeTask('fred', () => this.dataLoader.loadFredData());
+      primeTask('oil', () => this.dataLoader.loadOilAnalytics());
+      primeTask('spending', () => this.dataLoader.loadGovernmentSpending());
+      primeTask('bis', () => this.dataLoader.loadBisData());
+    }
+    if (this.isPanelNearViewport('trade-policy')) {
+      primeTask('tradePolicy', () => this.dataLoader.loadTradePolicy());
+    }
+    if (this.isPanelNearViewport('supply-chain')) {
+      primeTask('supplyChain', () => this.dataLoader.loadSupplyChain());
+    }
+    if (SITE_VARIANT === 'finance' && getSecretState('WORLDMONITOR_API_KEY').present) {
+      if (this.isPanelNearViewport('stock-analysis')) {
+        primeTask('stockAnalysis', () => this.dataLoader.loadStockAnalysis());
+      }
+      if (this.isPanelNearViewport('stock-backtest')) {
+        primeTask('stockBacktest', () => this.dataLoader.loadStockBacktest());
+      }
+      if (this.isPanelNearViewport('daily-market-brief')) {
+        primeTask('dailyMarketBrief', () => this.dataLoader.loadDailyMarketBrief());
+      }
+    }
 
     if (tasks.length > 0) {
       await Promise.allSettled(tasks);
