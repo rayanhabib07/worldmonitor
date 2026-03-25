@@ -3858,10 +3858,7 @@ export class DeckGLMap {
           if (layer === 'flights') this.manageAircraftTimer((input as HTMLInputElement).checked);
           this.render();
           this.onLayerChange?.(layer, (input as HTMLInputElement).checked, 'user');
-          if (layer === 'ciiChoropleth') {
-            const ciiLeg = this.container.querySelector('#ciiChoroplethLegend') as HTMLElement | null;
-            if (ciiLeg) ciiLeg.style.display = (input as HTMLInputElement).checked ? 'block' : 'none';
-          }
+          this.syncLegend(layer, (input as HTMLInputElement).checked);
           this.enforceLayerLimit();
         }
       });
@@ -4952,12 +4949,20 @@ export class DeckGLMap {
     }
   }
 
+  private syncLegend(layer: keyof MapLayers, enabled: boolean): void {
+    if (layer === 'ciiChoropleth') {
+      const ciiLeg = this.container.querySelector('#ciiChoroplethLegend') as HTMLElement | null;
+      if (ciiLeg) ciiLeg.style.display = enabled ? 'block' : 'none';
+    }
+  }
+
   // Toggle layer on/off programmatically
   public toggleLayer(layer: keyof MapLayers): void {
     this.state.layers[layer] = !this.state.layers[layer];
     const toggle = this.container.querySelector(`.layer-toggle[data-layer="${layer}"] input`) as HTMLInputElement;
     if (toggle) toggle.checked = this.state.layers[layer];
     this.render();
+    this.syncLegend(layer, this.state.layers[layer]);
     this.onLayerChange?.(layer, this.state.layers[layer], 'programmatic');
     this.enforceLayerLimit();
   }
