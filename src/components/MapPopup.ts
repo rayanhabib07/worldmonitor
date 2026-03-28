@@ -1005,6 +1005,17 @@ export class MapPopup {
     const relatedHotspots = event.relatedHotspots?.length
       ? `<div class="popup-related">${t('popups.near')}: ${event.relatedHotspots.map(h => escapeHtml(h)).join(', ')}</div>`
       : '';
+    const sourcesSection = event.sources?.length
+      ? `<div class="popup-sources">
+          <span class="popup-sources-label">${t('popups.sources')}</span>
+          <ul class="popup-sources-list">
+            ${event.sources.slice(0, 5).map(url => {
+              const domain = (() => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return escapeHtml(url); } })();
+              return `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="popup-source-link">${domain}</a></li>`;
+            }).join('')}
+          </ul>
+        </div>`
+      : '';
 
     return `
       <div class="popup-header protest ${severityClass}">
@@ -1028,9 +1039,10 @@ export class MapPopup {
           ${fatalitiesSection}
           ${actorsSection}
         </div>
-        ${event.title ? `<p class="popup-description">${escapeHtml(event.title)}</p>` : ''}
+        ${event.summary ? `<p class="popup-description">${escapeHtml(event.summary)}</p>` : event.title ? `<p class="popup-description">${escapeHtml(event.title)}</p>` : ''}
         ${tagsSection}
         ${relatedHotspots}
+        ${sourcesSection}
       </div>
     `;
   }
